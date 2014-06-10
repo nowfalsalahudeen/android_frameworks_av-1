@@ -544,6 +544,9 @@ void ExtendedCodec::configureVideoDecoder(
         //do nothing for non QC component
         return;
     }
+    // set frame packing
+    configureFramePackingFormat(msg, OMXhandle, nodeID, componentName);
+    
 
     setDIVXFormat(msg, mime, OMXhandle, nodeID, kPortIndexOutput);
     AString fileFormat;
