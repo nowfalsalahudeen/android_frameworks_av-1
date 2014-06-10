@@ -54,6 +54,7 @@ static int64_t kStartupTimeoutUs = 10000000ll;
 static int64_t kDefaultKeepAliveTimeoutUs = 60000000ll;
 
 static int64_t kPauseDelayUs = 3000000ll;
+static int64_t kTearDownTimeoutUs = 3000000ll;
 
 namespace android {
 
@@ -897,6 +898,14 @@ struct MyHandler : public AHandler {
                 request.append("\r\n");
 
                 mConn->sendRequest(request.c_str(), reply);
+                // If the response of teardown hasn't been received in 3 seconds,
+                 // post 'tear' message to avoid ANR.
+                 if (!msg->findInt32("reconnect", &reconnect) || !reconnect) {
+                     sp<AMessage> teardown = new AMessage('tear', id());
+                     teardown->setInt32("result", -ECONNABORTED);
+                     teardown->post(kTearDownTimeoutUs);
+                 }
+ 
                 break;
             }
 
